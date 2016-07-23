@@ -8,7 +8,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
-        <com.yluo.slideview.MyViewPager
+        <com.yluo.slideview.YluoViewPager
             android:background="@android:color/holo_orange_dark"
             android:id="@+id/vp_test"
             android:layout_width="match_parent"

@@ -291,7 +291,7 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 	private boolean isForeceIntercept(MotionEvent event) {
 		
 		if (isWaitingCallStatusListener) {
-			Log.d(TAG, "--------------------");
+//			Log.d(TAG, "--------------------");
 			mScroller.abortAnimation();
 //			if (mScroller.isFinished()) {
 				onScroll(mScroller.getFinalX());

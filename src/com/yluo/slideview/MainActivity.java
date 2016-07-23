@@ -18,7 +18,7 @@ import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	private static final String TAG = "MainActivity";
-	SacleSlideMenuLayout sl_test;
+	private SacleSlideMenuLayout sl_test;
 	private ViewPager vPager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {

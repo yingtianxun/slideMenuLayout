@@ -2,24 +2,31 @@ package com.yluo.slideview;
 
 import android.content.Context;
 import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
-public class MyViewPager extends ViewPager{
+public class YluoViewPager extends ViewPager{
 	
+	private static final String TAG = "YluoViewPager";
 	
 	private float mLastX = 0;
 	private float mLastY;
 	private int mTouchSlop;
 	private boolean mIsMove;
 	
-	public MyViewPager(Context context, AttributeSet attrs) {
+	private float mCurItemOffset = 0;
+	
+	private int mCurItem = 0;
+	
+	public YluoViewPager(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 	}
 
-	public MyViewPager(Context context) {
+	public YluoViewPager(Context context) {
 		super(context);
 		init();
 			
@@ -29,6 +36,33 @@ public class MyViewPager extends ViewPager{
 				.get(getContext());
 
 		mTouchSlop = viewConfiguration.getScaledTouchSlop();
+		
+		
+		this.addOnPageChangeListener(new OnPageChangeListener() {
+			
+			@Override
+			public void onPageSelected(int arg0) {
+//				
+				
+//				Log.d(TAG, "---mCurItem:" + mCurItem );
+				
+			}
+			
+			@Override
+			public void onPageScrolled(int arg0, float arg1, int arg2) {
+				mCurItemOffset = arg1;
+				mCurItem = arg0;
+				Log.d(TAG, "mCurItem:" + arg0 + "-----curItemOffset:" + mCurItemOffset);
+			}
+			
+			@Override
+			public void onPageScrollStateChanged(int arg0) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+		
+
 	}
 	
 	@Override
@@ -38,13 +72,20 @@ public class MyViewPager extends ViewPager{
 			getParent().requestDisallowInterceptTouchEvent(true);
 		} else if(event.getAction() == MotionEvent.ACTION_MOVE){
 						
-			if(getCurrentItem() == 0 && isMoveRight(event)) {
+			if(mCurItem == 0 && isMoveRight(event) && mCurItemOffset == 0.0f) {
 				getParent().requestDisallowInterceptTouchEvent(false);
-			} else if(getCurrentItem() == (getAdapter().getCount() - 1) && !isMoveRight(event)){
+				
+			} else if(mCurItem == (getAdapter().getCount() - 1) // 要添加一个百分比才行
+					&& !isMoveRight(event) && mCurItemOffset == 0.0f){
+				
+				Log.d(TAG, "mCurItem:" + mCurItem + "-----最右边不拦截"
+						+ ",getAdapter().getCount():" + getAdapter().getCount() + ",mCurItemOffset:" + mCurItemOffset);
+				
 				getParent().requestDisallowInterceptTouchEvent(false);
 			}
 			
 		}
+		
 		
 		mLastX = event.getX();
 		mLastY = event.getY();
