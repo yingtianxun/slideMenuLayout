@@ -18,6 +18,11 @@
 
                 android:layout_alignParentLeft="true"
                 android:text="asdasdsa" />
+			<TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:text="asdasdsa" />
             <com.yluo.slideview.SwitchButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

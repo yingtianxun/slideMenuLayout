@@ -43,7 +43,7 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 	private Point windowSize;
 
 	private int mSlideLayoutWidth;
-	
+
 	public SlideMenuLayout(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		init();
@@ -106,7 +106,7 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 		isFinishInflate = true;
 	}
 
-	private void resetWidthAndMenuScrollSpan() {		
+	private void resetWidthAndMenuScrollSpan() {
 		mMaxScrollSpan = 0;
 		mSlideLayoutWidth = 0;
 	}
@@ -186,9 +186,8 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 
 		layoutRighttMenu();
 
-		
 		moveView(getCloseMenuPosition());
-	
+
 	}
 
 	private void layoutLeftMenu() {
@@ -236,7 +235,7 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 
 		if (scrollToX > getRightOpenMenuPosition()) {
 			scrollToX = getRightOpenMenuPosition();
-			
+
 		} else if (scrollToX < getLeftOpenMenuPosition()) {
 			scrollToX = getLeftOpenMenuPosition();
 		}
@@ -256,19 +255,56 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 	private void moveView(int scrollToX) {
 		scrollTo(scrollToX, 0);
 
-//		float factor = mMenuWidthFactor
-//				+ (1 - (getScrollX() * 1.0f / mMaxLeftScrollSpan))
-//				* (1 - mScaleFactor);
-//		scaleView(mLeftViewMenu, factor, false);
-//		scaleView(mViewContent, (1 - factor) + mMenuWidthFactor, true);
+		// 判断目前显示的是哪个菜单
+
+		// 左菜单的范围 0<leftMax
+
+		// 右菜单的 >leftMax
+
+		View scaleView = null;
+
+		boolean isLeft = false;
+
+		if (scrollToX < getCloseMenuPosition()) { // 左菜单
+			scaleView = mLeftViewMenu;
+			isLeft = true;
+		} else if (scrollToX > getCloseMenuPosition()) {
+			scaleView = mRightViewMenu;
+			isLeft = false;
+		} else {
+			// 关闭了
+			scaleView(mViewContent, 1, isLeft);
+			return;
+		}
+		
+
+		float menuFactor = mMenuWidthFactor;
+		float contentFactor = mMenuWidthFactor;
+		if (isLeft) {
+			// 基本的缩放因子+现在比例算的
+			menuFactor +=  (1 - (scrollToX * 1.0f / getMenuWidth())) * (1 - mScaleFactor);
+		} else {
+			menuFactor +=  ((scrollToX - getCloseMenuPosition()) * 1.0f / getMenuWidth()) * (1 - mScaleFactor);
+		}
+		
+		contentFactor = (1 - menuFactor) + mMenuWidthFactor;
+		
+		scaleView(scaleView, menuFactor, isLeft);
+
+		scaleView(mViewContent, contentFactor, !isLeft);
+
 	}
 
 	private void scaleView(View sacleView, float scaleFactor, boolean isLeft) {
-		int viewWidth = sacleView.getMeasuredWidth();
-		int viewHeight = sacleView.getMeasuredHeight();
 
+		int viewHeight = sacleView.getMeasuredHeight();
+		int viewWidth = sacleView.getMeasuredWidth();
 		sacleView.setPivotY(viewHeight / 2);
-		sacleView.setPivotX(isLeft ? 0 : viewWidth);
+		if (isLeft) {
+			sacleView.setPivotX(viewWidth);
+		} else {
+			sacleView.setPivotX(0);
+		}
 
 		sacleView.setScaleY(scaleFactor);
 		sacleView.setScaleX(scaleFactor);
@@ -281,11 +317,11 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 
 	@Override
 	protected void judgeOpenOrClose() {
-		
-//		菜单的回调就在这里执行的
-		
+
+		// 菜单的回调就在这里执行的
+
 		// 关闭的
-		if(getScrollX() == getCloseMenuPosition()){
+		if (getScrollX() == getCloseMenuPosition()) {
 			if (!isMenuClose()) {
 				mMenuOpenStatus = NOT_OPEN;
 				Log.d(TAG, "----关闭菜单");
@@ -299,9 +335,10 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 		} else if (getScrollX() == getRightOpenMenuPosition()) {
 			if (!isMenuRightOpen()) {
 				mMenuOpenStatus = OPEN_RIGHT;
+				
 				Log.d(TAG, "----打开右菜单");
 			}
-		}  
+		}
 	}
 
 	public boolean isMenuClose() {
@@ -320,76 +357,54 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 
 	@Override
 	protected void openMenu(int curVelectoryDirection) {
-		if(isMeetOpenLeftMenu() || curVelectoryDirection == 1){
+		if (isMeetOpenLeftMenu() || curVelectoryDirection == 1) {
 			openLeftMenu();
-		} else if(isMeetOpenRightMenu() || curVelectoryDirection == -1) {
+		} else if (isMeetOpenRightMenu() || curVelectoryDirection == -1) {
 			openRightMenu();
 		}
 	}
-	
+
 	@Override
-	protected  boolean hasLeftMenu() {
+	protected boolean hasLeftMenu() {
 		return mLeftViewMenu != null;
 	}
+
 	@Override
-	protected  boolean hasRightMenu() {
+	protected boolean hasRightMenu() {
 		return mRightViewMenu != null;
 	}
-	
+
 	// 满足打开左菜单的条件
-	/**
-	 * true 满足,false不满足
-	 */
 	protected boolean isMeetOpenLeftMenu() {
-		
-		if(!hasLeftMenu()) {
+
+		if (!hasLeftMenu()) {
 			return false;
 		}
-		
-//		Log.d(TAG, "getScrollX():" + getScrollX() + ",half:" + 
-//				mLeftViewMenu.getMeasuredWidth() /2);
-		
-		return getScrollX() <=  mLeftViewMenu.getMeasuredWidth() /2;
-		
-		
+
+		return getScrollX() <= mLeftViewMenu.getMeasuredWidth() / 2;
+
 	}
+
 	// 满足打开右菜单的条件
 	protected boolean isMeetOpenRightMenu() {
-		
-		if(!hasRightMenu()) {
+
+		if (!hasRightMenu()) {
 			return false;
 		}
-		
+
 		int openWidth = 0;
-		
-		if(hasLeftMenu()) {
+
+		if (hasLeftMenu()) {
 			openWidth += mLeftViewMenu.getMeasuredWidth();
 		}
-		
-		openWidth += (mContentWidth * mMenuWidthFactor)/2;
-		
-		
-		
+		openWidth += getMenuWidth() / 2;
+
 		return getScrollX() >= openWidth;
 	}
 
 	@Override
 	protected boolean isMeetOpentMenu() {
-		
+
 		return isMeetOpenLeftMenu() || isMeetOpenRightMenu();
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

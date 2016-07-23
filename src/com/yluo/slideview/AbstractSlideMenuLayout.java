@@ -63,12 +63,6 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 	public static enum MenuSize {
 		LEFTSIZE, RIGHTSIZE, BOTHSIZE
 	}
-
-//	private MenuSize menuSide = MenuSize.LEFTSIZE;
-
-//	protected int mMaxLeftScrollSpan = 0;// ×ó±ß×î´ó¹ö¶¯·¶Î§
-
-//	protected int mMaRightScrollSpan = 0; // ÓÒ±ß×î´ó¹ö¶¯·¶Î§
 	
 	protected int mMaxScrollSpan = 0; // ÓÒ±ß×î´ó¹ö¶¯·¶Î§
 	
@@ -205,20 +199,6 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 			} else {
 				mInterceptFlag = DONINTERCE; // ²»À¹½Ø
 			}
-			
-//			// ´ò¿ª,ÏòÓÒ»¬¶¯
-//			if (!isMenuLeftOpen() && isSlideLeft()) {
-//				mInterceptFlag = INTERCE;
-//				// Log.d(TAG, "move----À¹½Ø-----------");
-//			} else if (isMenuLeftOpen() && !isSlideLeft()) {
-//				mInterceptFlag = INTERCE;
-//				// Log.d(TAG, "move----À¹½Ø-----------");
-//			} else {
-//
-//				mInterceptFlag = DONINTERCE; // ²»À¹½Ø
-//				// Log.d(TAG, "move----²»À¹½Ø-----------");
-//			}
-
 			break;
 		case MotionEvent.ACTION_UP:
 		case MotionEvent.ACTION_CANCEL: {
@@ -243,7 +223,7 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 		return false;
 	}
 	
-	private float getMenuWidth() {
+	protected float getMenuWidth() {
 		return mMenuWidthFactor * mContentWidth;
 	}
 	
@@ -353,13 +333,9 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 					}
 					curVelectoryDirection = -1;
 				}
-				
-				
 				closeOrOpenMenu(isClose,curVelectoryDirection);
 
 			} else if (getScrollX() != mMaxScrollSpan && getScrollX() != 0) {
-					
-				Log.d(TAG, "------11111---------");
 				
 				closeOrOpenMenu(!isMeetOpentMenu(),0);
 
