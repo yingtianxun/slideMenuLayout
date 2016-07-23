@@ -68,18 +68,29 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 	}
 
 	public void setLeftMenuView(int id) {
+		setLeftMenuView(inflate(id));
+	}
+	
+	public void setRightMenuView(View leftMenuView) {
+		mRightViewMenu = leftMenuView;
+		if (isFinishInflate) {
+			addChild(mRightViewMenu);
+		}
+	}
 
-		setLeftMenuView(View.inflate(getContext(), id, null));
-
+	public void setRightMenuView(int id) {
+		setRightMenuView(inflate(id));
+	}
+	
+	private View inflate(int id){
+		return View.inflate(getContext(), id, null);
 	}
 
 	@Override
 	protected void onFinishInflate() {
-
 		if (getChildCount() != 1) {
 			throw new IllegalArgumentException("SlideMenuLayout的内容只能有一个");
 		}
-
 		mViewContent = getChildAt(0);
 
 		addChild(mLeftViewMenu, true);
@@ -111,14 +122,6 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 		widthMeasureSpec = MeasureSpec.makeMeasureSpec(mSlideLayoutWidth,
 				MeasureSpec.EXACTLY);
 		
-		
-		int  size = MeasureSpec.getSize(heightMeasureSpec);
-		
-		int  mode = MeasureSpec.getMode(heightMeasureSpec);
-	
-		
-		heightMeasureSpec = MeasureSpec.makeMeasureSpec(windowSize.y,
-				MeasureSpec.EXACTLY);
 		
 		setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
 		
