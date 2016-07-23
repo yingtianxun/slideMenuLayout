@@ -26,10 +26,6 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 
 	private View mViewContent;
 
-	// private boolean isLeftMenuOpen = false; // 左菜单是否关闭
-	//
-	// private boolean isRightMenuOpen = false; // 右菜单是否关闭
-
 	private static final int OPEN_LEFT = 1; // 打开左菜单
 
 	private static final int OPEN_RIGHT = -1; // 打开右菜单
@@ -187,7 +183,6 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 		layoutRighttMenu();
 
 		moveView(getCloseMenuPosition());
-
 	}
 
 	private void layoutLeftMenu() {
@@ -211,7 +206,6 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 			mViewContent.layout(0, 0, mViewContent.getMeasuredWidth(),
 					mViewContent.getMeasuredHeight());
 		}
-
 	}
 
 	private void layoutRighttMenu() {
@@ -220,7 +214,6 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 					.layout(mViewContent.getRight(), 0, mViewContent.getRight()
 							+ mRightViewMenu.getMeasuredWidth(),
 							mRightViewMenu.getMeasuredHeight());
-
 		}
 	}
 
@@ -255,6 +248,11 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 	private void moveView(int scrollToX) {
 		scrollTo(scrollToX, 0);
 
+		sacleView(scrollToX);
+
+	}
+
+	private void sacleView(int scrollToX) {
 		// 判断目前显示的是哪个菜单
 
 		// 左菜单的范围 0<leftMax
@@ -276,23 +274,23 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 			scaleView(mViewContent, 1, isLeft);
 			return;
 		}
-		
 
 		float menuFactor = mMenuWidthFactor;
 		float contentFactor = mMenuWidthFactor;
 		if (isLeft) {
 			// 基本的缩放因子+现在比例算的
-			menuFactor +=  (1 - (scrollToX * 1.0f / getMenuWidth())) * (1 - mScaleFactor);
+			menuFactor += (1 - (scrollToX * 1.0f / getMenuWidth()))
+					* (1 - mScaleFactor);
 		} else {
-			menuFactor +=  ((scrollToX - getCloseMenuPosition()) * 1.0f / getMenuWidth()) * (1 - mScaleFactor);
+			menuFactor += ((scrollToX - getCloseMenuPosition()) * 1.0f / getMenuWidth())
+					* (1 - mScaleFactor);
 		}
-		
+
 		contentFactor = (1 - menuFactor) + mMenuWidthFactor;
-		
+
 		scaleView(scaleView, menuFactor, isLeft);
 
 		scaleView(mViewContent, contentFactor, !isLeft);
-
 	}
 
 	private void scaleView(View sacleView, float scaleFactor, boolean isLeft) {
@@ -335,7 +333,7 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 		} else if (getScrollX() == getRightOpenMenuPosition()) {
 			if (!isMenuRightOpen()) {
 				mMenuOpenStatus = OPEN_RIGHT;
-				
+
 				Log.d(TAG, "----打开右菜单");
 			}
 		}
@@ -357,11 +355,12 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 
 	@Override
 	protected void openMenu(int curVelectoryDirection) {
+		
 		if (isMeetOpenLeftMenu() || curVelectoryDirection == 1) {
 			openLeftMenu();
 		} else if (isMeetOpenRightMenu() || curVelectoryDirection == -1) {
 			openRightMenu();
-		}
+		} 
 	}
 
 	@Override
