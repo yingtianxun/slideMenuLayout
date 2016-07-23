@@ -12,7 +12,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.Scroller;
 
-public class SlideMenuLayout extends AbstractSlideMenuLayout {
+public class SacleSlideMenuLayout extends AbstractSlideMenuLayout {
 
 	private static final String TAG = "SlideMenuLayout";
 
@@ -40,17 +40,17 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 
 	private int mSlideLayoutWidth;
 
-	public SlideMenuLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+	public SacleSlideMenuLayout(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		init();
 	}
 
-	public SlideMenuLayout(Context context, AttributeSet attrs) {
+	public SacleSlideMenuLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		init();
 	}
 
-	public SlideMenuLayout(Context context) {
+	public SacleSlideMenuLayout(Context context) {
 		super(context);
 		init();
 	}
@@ -342,12 +342,10 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 	public boolean isMenuClose() {
 		return mMenuOpenStatus == NOT_OPEN;
 	}
-
 	@Override
 	public boolean isMenuLeftOpen() {
 		return mMenuOpenStatus == OPEN_LEFT;
 	}
-
 	@Override
 	public boolean isMenuRightOpen() {
 		return mMenuOpenStatus == OPEN_RIGHT;
