@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
-    <com.yluo.slideview.SacleSlideMenuLayout
+    <com.yluo.slideview.HideSlideMenuLayout
         android:id="@+id/sl_test"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
@@ -36,6 +36,6 @@
                 android:layout_alignParentLeft="true"
                 android:text="asdasdsa" />
         </RelativeLayout>
-    </com.yluo.slideview.SacleSlideMenuLayout>
+    </com.yluo.slideview.HideSlideMenuLayout>
 
 </RelativeLayout>

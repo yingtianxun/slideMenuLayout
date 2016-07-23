@@ -18,8 +18,6 @@ public class SacleSlideMenuLayout extends AbstractSlideMenuLayout {
 
 	private float mScaleFactor = 0.8f;
 
-	protected float mMenuWidthFactor = 0.8f; // 显示页面的百分比
-
 	private View mLeftViewMenu;
 
 	private View mRightViewMenu;
@@ -36,7 +34,7 @@ public class SacleSlideMenuLayout extends AbstractSlideMenuLayout {
 
 	private boolean isFinishInflate = false; // 是否已经完成枚举
 
-	private Point windowSize;
+	
 
 	private int mSlideLayoutWidth;
 
@@ -58,8 +56,8 @@ public class SacleSlideMenuLayout extends AbstractSlideMenuLayout {
 	@Override
 	protected void init() {
 		super.init();
-		setMenuWidthFactor(mMenuWidthFactor);
-		windowSize = getWindowSize();
+		mMenuWidthFactor = 0.8f;
+		
 	}
 
 	public void setLeftMenuView(View leftMenuView) {
@@ -84,9 +82,7 @@ public class SacleSlideMenuLayout extends AbstractSlideMenuLayout {
 		setRightMenuView(inflate(id));
 	}
 
-	private View inflate(int id) {
-		return View.inflate(getContext(), id, null);
-	}
+	
 
 	@Override
 	protected void onFinishInflate() {
@@ -253,16 +249,10 @@ public class SacleSlideMenuLayout extends AbstractSlideMenuLayout {
 	}
 
 	private void sacleView(int scrollToX) {
-		// 判断目前显示的是哪个菜单
-
 		// 左菜单的范围 0<leftMax
-
 		// 右菜单的 >leftMax
-
 		View scaleView = null;
-
 		boolean isLeft = false;
-
 		if (scrollToX < getCloseMenuPosition()) { // 左菜单
 			scaleView = mLeftViewMenu;
 			isLeft = true;
@@ -310,31 +300,23 @@ public class SacleSlideMenuLayout extends AbstractSlideMenuLayout {
 
 	@Override
 	protected void onTouchUp(MotionEvent event, float curVelocitX) {
-
+		
 	}
 
 	@Override
 	protected void judgeOpenOrClose() {
-
-		// 菜单的回调就在这里执行的
-
-		// 关闭的
 		if (getScrollX() == getCloseMenuPosition()) {
 			if (!isMenuClose()) {
 				mMenuOpenStatus = NOT_OPEN;
-				Log.d(TAG, "----关闭菜单");
 			}
 		} else if (getScrollX() == getLeftOpenMenuPosition()) { //
 			if (!isMenuLeftOpen()) {
 				mMenuOpenStatus = OPEN_LEFT;
-				Log.d(TAG, "----打开左菜单");
 			}
 			// 打开的
 		} else if (getScrollX() == getRightOpenMenuPosition()) {
 			if (!isMenuRightOpen()) {
 				mMenuOpenStatus = OPEN_RIGHT;
-
-				Log.d(TAG, "----打开右菜单");
 			}
 		}
 	}
@@ -373,13 +355,10 @@ public class SacleSlideMenuLayout extends AbstractSlideMenuLayout {
 
 	// 满足打开左菜单的条件
 	protected boolean isMeetOpenLeftMenu() {
-
 		if (!hasLeftMenu()) {
 			return false;
 		}
-
 		return getScrollX() <= mLeftViewMenu.getMeasuredWidth() / 2;
-
 	}
 
 	// 满足打开右菜单的条件

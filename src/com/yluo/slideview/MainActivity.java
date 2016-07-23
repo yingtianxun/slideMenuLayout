@@ -10,13 +10,15 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_scale_slide_menu);
         
         sl_test = (SacleSlideMenuLayout)findViewById(R.id.sl_test);
         
         sl_test.setLeftMenuView(R.layout.left_menu);
         
         sl_test.setRightMenuView(R.layout.right_menu);
+        
+        
         
         
     }
