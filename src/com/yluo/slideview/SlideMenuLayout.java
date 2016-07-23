@@ -20,24 +20,30 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 
 	protected float mMenuWidthFactor = 0.8f; // 显示页面的百分比
 
-	private int mMaxLeftScrollSpan = 0; // 最大滚动范围
-
-	private int mMaxRightScrollSpan = 0; // 最大滚动范围
-
 	private View mLeftViewMenu;
 
 	private View mRightViewMenu;
 
 	private View mViewContent;
 
-	private boolean isOpen = false;
+	// private boolean isLeftMenuOpen = false; // 左菜单是否关闭
+	//
+	// private boolean isRightMenuOpen = false; // 右菜单是否关闭
+
+	private static final int OPEN_LEFT = 1; // 打开左菜单
+
+	private static final int OPEN_RIGHT = -1; // 打开右菜单
+
+	private static final int NOT_OPEN = 0; // 关闭
+
+	private int mMenuOpenStatus = NOT_OPEN;
 
 	private boolean isFinishInflate = false; // 是否已经完成枚举
 
 	private Point windowSize;
 
 	private int mSlideLayoutWidth;
-
+	
 	public SlideMenuLayout(Context context, AttributeSet attrs, int defStyleAttr) {
 		super(context, attrs, defStyleAttr);
 		init();
@@ -70,7 +76,7 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 	public void setLeftMenuView(int id) {
 		setLeftMenuView(inflate(id));
 	}
-	
+
 	public void setRightMenuView(View leftMenuView) {
 		mRightViewMenu = leftMenuView;
 		if (isFinishInflate) {
@@ -81,8 +87,8 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 	public void setRightMenuView(int id) {
 		setRightMenuView(inflate(id));
 	}
-	
-	private View inflate(int id){
+
+	private View inflate(int id) {
 		return View.inflate(getContext(), id, null);
 	}
 
@@ -100,9 +106,8 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 		isFinishInflate = true;
 	}
 
-	private void resetWidthAndMenuScrollSpan() {
-		mMaxLeftScrollSpan = 0;
-		mMaxRightScrollSpan = 0;
+	private void resetWidthAndMenuScrollSpan() {		
+		mMaxScrollSpan = 0;
 		mSlideLayoutWidth = 0;
 	}
 
@@ -112,45 +117,48 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 		resetWidthAndMenuScrollSpan();
 
 		setLeftMenuWidthAndHeight(heightMeasureSpec);
-		setMaxLeftScrollSpan(mMaxLeftScrollSpan);// 设置左边菜单
 
 		setRightMenuWidthAndHeight(heightMeasureSpec);
-		setMaxRightScrollSpan(mMaxRightScrollSpan);// 设置右菜单
 
 		setContentWidthAndHeight(heightMeasureSpec); // 设置内容高度
 
 		widthMeasureSpec = MeasureSpec.makeMeasureSpec(mSlideLayoutWidth,
 				MeasureSpec.EXACTLY);
-		
-		
+
 		setMeasuredDimension(widthMeasureSpec, heightMeasureSpec);
-		
+
 	}
 
 	private void setContentWidthAndHeight(int heightMeasureSpec) {
 
-		int mContentWidth = setViewWidthAndHeight(mViewContent, false,heightMeasureSpec);
-		mSlideLayoutWidth += mContentWidth;
+		int contentWidth = setViewWidthAndHeight(mViewContent, false,
+				heightMeasureSpec);
+		mSlideLayoutWidth += contentWidth;
+		setContentWidth(contentWidth);
+
 	}
 
 	private void setRightMenuWidthAndHeight(int heightMeasureSpec) {
-		mMaxRightScrollSpan = setViewWidthAndHeight(mRightViewMenu, true,heightMeasureSpec);
+		int rightMenuWidth = setViewWidthAndHeight(mRightViewMenu, true,
+				heightMeasureSpec);
 
-		mSlideLayoutWidth += mMaxRightScrollSpan;
+		mSlideLayoutWidth += rightMenuWidth;
 
-		setMaxRightScrollSpan(mMaxRightScrollSpan);
+		addScrollSpan(rightMenuWidth); // 设置向右滚动的最大距离
 	}
 
 	private void setLeftMenuWidthAndHeight(int heightMeasureSpec) {
 
-		mMaxLeftScrollSpan = setViewWidthAndHeight(mLeftViewMenu, true,heightMeasureSpec);
-		
-		mSlideLayoutWidth += mMaxLeftScrollSpan;
+		int leftMenuWidth = setViewWidthAndHeight(mLeftViewMenu, true,
+				heightMeasureSpec);
 
-		setMaxLeftScrollSpan(mMaxLeftScrollSpan);
+		mSlideLayoutWidth += leftMenuWidth;
+
+		addScrollSpan(leftMenuWidth); // 设置向左滚动的最大距离
 	}
 
-	private int setViewWidthAndHeight(View view, boolean isMenu,int heightMeasureSpec) {
+	private int setViewWidthAndHeight(View view, boolean isMenu,
+			int heightMeasureSpec) {
 		if (view != null) {
 			int viewWidth = 0;
 			if (isMenu) {
@@ -158,13 +166,11 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 			} else {
 				viewWidth = windowSize.x;
 			}
-			
+
 			int widthMeasureSpec = MeasureSpec.makeMeasureSpec(viewWidth,
 					MeasureSpec.EXACTLY);
-			
-			
+
 			view.measure(widthMeasureSpec, heightMeasureSpec);
-			
 
 			return viewWidth;
 		}
@@ -175,51 +181,49 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 	public void layOutChildren(boolean changed, int left, int top, int right,
 			int bottom) {
 		layoutLeftMenu();
-		
+
 		layoutContent();
-		
+
 		layoutRighttMenu();
+
 		
-		if(mLeftViewMenu != null) {
-			moveView(mMaxLeftScrollSpan);
-		}
+		moveView(getCloseMenuPosition());
+	
 	}
-	
-	
-	
+
 	private void layoutLeftMenu() {
 		if (mLeftViewMenu != null) {
-			mLeftViewMenu.layout(0, 0, mLeftViewMenu.getMeasuredWidth(),mLeftViewMenu.getMeasuredHeight());			
+			mLeftViewMenu.layout(0, 0, mLeftViewMenu.getMeasuredWidth(),
+					mLeftViewMenu.getMeasuredHeight());
 		}
 
 	}
 
 	private void layoutContent() {
+
 		if (mLeftViewMenu != null) {
-			if (mLeftViewMenu != null) {
-				mViewContent.layout(
-						mLeftViewMenu.getMeasuredWidth(),
-						0,
-						mLeftViewMenu.getMeasuredWidth()
-								+ mViewContent.getMeasuredWidth(),
-						mViewContent.getMeasuredHeight());
-			} else {
-				mViewContent.layout(0, 0, mViewContent.getMeasuredWidth(),
-						mViewContent.getMeasuredHeight());
-			}
+			mViewContent.layout(
+					mLeftViewMenu.getMeasuredWidth(),
+					0,
+					mLeftViewMenu.getMeasuredWidth()
+							+ mViewContent.getMeasuredWidth(),
+					mViewContent.getMeasuredHeight());
+		} else {
+			mViewContent.layout(0, 0, mViewContent.getMeasuredWidth(),
+					mViewContent.getMeasuredHeight());
 		}
-	}
-	private void layoutRighttMenu() {
-		if (mRightViewMenu != null) {
-				mLeftViewMenu.layout(mViewContent.getRight(), 
-						0, 
-						mViewContent.getRight() + mRightViewMenu.getMeasuredWidth(),
-						mLeftViewMenu.getMeasuredHeight());
-			
-		}
+
 	}
 
-	
+	private void layoutRighttMenu() {
+		if (mRightViewMenu != null) {
+			mRightViewMenu
+					.layout(mViewContent.getRight(), 0, mViewContent.getRight()
+							+ mRightViewMenu.getMeasuredWidth(),
+							mRightViewMenu.getMeasuredHeight());
+
+		}
+	}
 
 	@Override
 	protected void onTouchDown(MotionEvent event) {
@@ -230,17 +234,17 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 	private int adjustMenuPosition(float disX) {
 		int scrollToX = (int) (getScrollX() + disX);
 
-		if (scrollToX > mMaxLeftScrollSpan) {
-			scrollToX = mMaxLeftScrollSpan;
-		} else if (scrollToX < 0) {
-			scrollToX = 0;
+		if (scrollToX > getRightOpenMenuPosition()) {
+			scrollToX = getRightOpenMenuPosition();
+			
+		} else if (scrollToX < getLeftOpenMenuPosition()) {
+			scrollToX = getLeftOpenMenuPosition();
 		}
 		return scrollToX;
 	}
 
 	@Override
 	protected void onTouchMove(MotionEvent event, float disX, float disY) {
-
 		moveView(adjustMenuPosition(disX));
 	}
 
@@ -252,48 +256,140 @@ public class SlideMenuLayout extends AbstractSlideMenuLayout {
 	private void moveView(int scrollToX) {
 		scrollTo(scrollToX, 0);
 
-		float factor = mMenuWidthFactor
-				+ (1 - (getScrollX() * 1.0f / mMaxLeftScrollSpan))
-				* (1 - mScaleFactor);
-		scaleView(mLeftViewMenu, factor, false);
-		scaleView(mViewContent, (1 - factor) + mMenuWidthFactor, true);
+//		float factor = mMenuWidthFactor
+//				+ (1 - (getScrollX() * 1.0f / mMaxLeftScrollSpan))
+//				* (1 - mScaleFactor);
+//		scaleView(mLeftViewMenu, factor, false);
+//		scaleView(mViewContent, (1 - factor) + mMenuWidthFactor, true);
 	}
+
 	private void scaleView(View sacleView, float scaleFactor, boolean isLeft) {
 		int viewWidth = sacleView.getMeasuredWidth();
 		int viewHeight = sacleView.getMeasuredHeight();
-		
-		sacleView.setPivotY(viewHeight/2);
+
+		sacleView.setPivotY(viewHeight / 2);
 		sacleView.setPivotX(isLeft ? 0 : viewWidth);
-		
+
 		sacleView.setScaleY(scaleFactor);
 		sacleView.setScaleX(scaleFactor);
 	}
+
 	@Override
 	protected void onTouchUp(MotionEvent event, float curVelocitX) {
 
 	}
 
 	@Override
-	public boolean isMenuOpen() {
-		return isOpen;
+	protected void judgeOpenOrClose() {
+		
+//		菜单的回调就在这里执行的
+		
+		// 关闭的
+		if(getScrollX() == getCloseMenuPosition()){
+			if (!isMenuClose()) {
+				mMenuOpenStatus = NOT_OPEN;
+				Log.d(TAG, "----关闭菜单");
+			}
+		} else if (getScrollX() == getLeftOpenMenuPosition()) { //
+			if (!isMenuLeftOpen()) {
+				mMenuOpenStatus = OPEN_LEFT;
+				Log.d(TAG, "----打开左菜单");
+			}
+			// 打开的
+		} else if (getScrollX() == getRightOpenMenuPosition()) {
+			if (!isMenuRightOpen()) {
+				mMenuOpenStatus = OPEN_RIGHT;
+				Log.d(TAG, "----打开右菜单");
+			}
+		}  
+	}
+
+	public boolean isMenuClose() {
+		return mMenuOpenStatus == NOT_OPEN;
 	}
 
 	@Override
-	protected void judgeOpenOrClose(int openMenuPosition, int closeMenuPosition) {
-
-		// 关闭的
-		if (getScrollX() == closeMenuPosition) { //
-			if (isOpen) {
-				isOpen = false;
-				Log.d(TAG, "----关闭");
-			}
-			// 打开的
-		} else if (getScrollX() == openMenuPosition) {
-			if (!isOpen) {
-				isOpen = true;
-				Log.d(TAG, "----打开");
-			}
-		}
+	public boolean isMenuLeftOpen() {
+		return mMenuOpenStatus == OPEN_LEFT;
 	}
 
+	@Override
+	public boolean isMenuRightOpen() {
+		return mMenuOpenStatus == OPEN_RIGHT;
+	}
+
+	@Override
+	protected void openMenu(int curVelectoryDirection) {
+		if(isMeetOpenLeftMenu() || curVelectoryDirection == 1){
+			openLeftMenu();
+		} else if(isMeetOpenRightMenu() || curVelectoryDirection == -1) {
+			openRightMenu();
+		}
+	}
+	
+	@Override
+	protected  boolean hasLeftMenu() {
+		return mLeftViewMenu != null;
+	}
+	@Override
+	protected  boolean hasRightMenu() {
+		return mRightViewMenu != null;
+	}
+	
+	// 满足打开左菜单的条件
+	/**
+	 * true 满足,false不满足
+	 */
+	protected boolean isMeetOpenLeftMenu() {
+		
+		if(!hasLeftMenu()) {
+			return false;
+		}
+		
+//		Log.d(TAG, "getScrollX():" + getScrollX() + ",half:" + 
+//				mLeftViewMenu.getMeasuredWidth() /2);
+		
+		return getScrollX() <=  mLeftViewMenu.getMeasuredWidth() /2;
+		
+		
+	}
+	// 满足打开右菜单的条件
+	protected boolean isMeetOpenRightMenu() {
+		
+		if(!hasRightMenu()) {
+			return false;
+		}
+		
+		int openWidth = 0;
+		
+		if(hasLeftMenu()) {
+			openWidth += mLeftViewMenu.getMeasuredWidth();
+		}
+		
+		openWidth += (mContentWidth * mMenuWidthFactor)/2;
+		
+		
+		
+		return getScrollX() >= openWidth;
+	}
+
+	@Override
+	protected boolean isMeetOpentMenu() {
+		
+		return isMeetOpenLeftMenu() || isMeetOpenRightMenu();
+	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -16,6 +16,9 @@ public class MainActivity extends Activity {
         
         sl_test.setLeftMenuView(R.layout.left_menu);
         
+        sl_test.setRightMenuView(R.layout.right_menu);
+        
+        
     }
 
 }
