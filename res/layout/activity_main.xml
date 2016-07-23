@@ -23,11 +23,11 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:text="asdasdsa" />
-            <com.yluo.slideview.SwitchButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="100dp"
-                android:layout_marginTop="100dp" />
+            <Button
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_centerInParent="true"
+        android:background="@android:color/black" />
 
             <TextView
                 android:layout_width="wrap_content"
