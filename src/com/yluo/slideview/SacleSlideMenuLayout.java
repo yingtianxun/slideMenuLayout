@@ -308,15 +308,19 @@ public class SacleSlideMenuLayout extends AbstractSlideMenuLayout {
 		if (getScrollX() == getCloseMenuPosition()) {
 			if (!isMenuClose()) {
 				mMenuOpenStatus = NOT_OPEN;
+				
+				Log.d(TAG, "关闭菜单");
 			}
 		} else if (getScrollX() == getLeftOpenMenuPosition()) { //
 			if (!isMenuLeftOpen()) {
 				mMenuOpenStatus = OPEN_LEFT;
+				Log.d(TAG, "打开左菜单");
 			}
 			// 打开的
 		} else if (getScrollX() == getRightOpenMenuPosition()) {
 			if (!isMenuRightOpen()) {
 				mMenuOpenStatus = OPEN_RIGHT;
+				Log.d(TAG, "打开右菜单");
 			}
 		}
 	}

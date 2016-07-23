@@ -1,16 +1,29 @@
 package com.yluo.slideview;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.util.Log;
+import android.view.View;
+import android.view.View.MeasureSpec;
+import android.view.ViewGroup;
+import android.view.ViewGroup.MarginLayoutParams;
+import android.widget.TextView;
 
 
 public class MainActivity extends Activity {
-	
+	private static final String TAG = "MainActivity";
 	SacleSlideMenuLayout sl_test;
+	private ViewPager vPager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_scale_slide_menu);
+        setContentView(R.layout.activity_main);
         
         sl_test = (SacleSlideMenuLayout)findViewById(R.id.sl_test);
         
@@ -18,9 +31,48 @@ public class MainActivity extends Activity {
         
         sl_test.setRightMenuView(R.layout.right_menu);
         
+        vPager = (ViewPager) findViewById(R.id.vp_test);
         
+        vPager.setAdapter(new fuckAdapter());
         
-        
+    }
+    
+    class fuckAdapter extends PagerAdapter {
+    	
+		@Override
+		public void destroyItem(ViewGroup container, int position, Object object) {
+			container.removeView((View) object);
+		}
+
+		@Override
+		public Object instantiateItem(ViewGroup container, int position) {
+			
+			TextView textView = new TextView(MainActivity.this);
+			
+			textView.setText("----Ò³Ãæ:" + position);
+			
+			textView.setTextColor(Color.BLACK);
+			
+			int widthSpec = MeasureSpec.makeMeasureSpec(100, MeasureSpec.EXACTLY);
+			int heightSpec = MeasureSpec.makeMeasureSpec(100, MeasureSpec.EXACTLY);
+			MarginLayoutParams layoutParams = new MarginLayoutParams(widthSpec,heightSpec);
+			
+			
+			textView.setLayoutParams(layoutParams);
+			container.addView(textView);
+			return textView;
+		}
+
+		@Override
+		public int getCount() {
+			return 3;
+		}
+
+		@Override
+		public boolean isViewFromObject(View arg0, Object arg1) {
+			return arg0 == arg1;
+		}
+    	
     }
 
 }

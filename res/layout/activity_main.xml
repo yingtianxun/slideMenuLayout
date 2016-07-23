@@ -8,34 +8,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
-        <RelativeLayout
+        <com.yluo.slideview.MyViewPager
+            android:background="@android:color/holo_orange_dark"
+            android:id="@+id/vp_test"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/holo_orange_dark" >
-			<TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-
-                android:layout_alignParentLeft="true"
-                android:text="asdasdsa" />
-			<TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:text="asdasdsa" />
-            <Button
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-        android:layout_centerInParent="true"
-        android:background="@android:color/black" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentLeft="true"
-                android:text="asdasdsa" />
-        </RelativeLayout>
+            android:layout_height="match_parent" />
+        
     </com.yluo.slideview.SacleSlideMenuLayout>
 
 </RelativeLayout>

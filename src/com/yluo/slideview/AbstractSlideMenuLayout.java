@@ -60,7 +60,15 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 	private static final int NOT_SLIDE = 0; // 没处理
 
 	private float mCurSlideDirectiron = NOT_SLIDE; // 当前滑动的方向
+
 	protected Point windowSize;
+
+	private boolean canOpenLeft = true;
+
+	private boolean canOpenRight = true;
+
+	protected int curMinScrollSpan = 0;
+	protected int curMaxScrollSpan = 0;
 
 	public static enum MenuSize {
 		LEFTSIZE, RIGHTSIZE, BOTHSIZE
@@ -168,57 +176,101 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 
 	@Override
 	public boolean onInterceptTouchEvent(MotionEvent event) {
+
+		// 没有左右菜单的时候 什么都不拦截
+		if (!hasLeftMenu() && !hasRightMenu()) {
+			return false;
+		}
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			Log.d(TAG, "---------Down--------:" + mInterceptFlag);
 			if (isForeceIntercept(event)) {
-				Log.d(TAG, "---------uuuuuu--------:拦截");
+				// Log.d(TAG, "====--强制拦截--===");
 				mInterceptFlag = INTERCE;
 			} else {
 				mInterceptFlag = NOTINTERCE;
 			}
 			curMoveDirection = NODIRECTION;
+			velocityTracker.clear();
+			velocityTracker.addMovement(event);
+			canOpenLeft = true;
+			canOpenRight = true;
+			curMinScrollSpan = 0;
+			curMaxScrollSpan = mMaxScrollSpan;
 			break;
 		case MotionEvent.ACTION_MOVE:
-			Log.d(TAG, "---------Move--------");
-			if (mInterceptFlag != NOTINTERCE) {
-				Log.d(TAG, "---------0000--------:" + mInterceptFlag);
-				break;
-			}
-			if (curMoveDirection == DIRECTION_Y) {
-				Log.d(TAG, "---------11111--------:不拦截");
-				mInterceptFlag = DONINTERCE; // 不拦截
-				break;
-			}
-			calcSlideDirecton(event);
 
-			if (isMenuLeftOpen() && isSlideLeft()) { // 左菜单打开,并且向左滑动
-				Log.d(TAG, "---------22222--------:不拦截");
-				mInterceptFlag = DONINTERCE; // 不拦截
-			} else if (isMenuRightOpen() && isSlideRight()) { // 右菜单打开,并且向右滑动
-				Log.d(TAG, "---------3333--------:不拦截");
-				mInterceptFlag = DONINTERCE; // 不拦截
-			} else {
-				Log.d(TAG, "---------44444--------:拦截");
-				mInterceptFlag = INTERCE; //
+			// Log.d(TAG, "---move------------");
+
+			velocityTracker.addMovement(event);
+			if (mInterceptFlag != NOTINTERCE) {
+				break;
 			}
-			break;
-		case MotionEvent.ACTION_UP: {
-			Log.d(TAG, "---------UP--------");
-//			mInterceptFlag = NOTINTERCE;
-		}
-			break;
-		case MotionEvent.ACTION_CANCEL: {
-			Log.d(TAG, "---------CANCEL--------");
-//			mInterceptFlag = NOTINTERCE;
-		}
+			calcMoveDirection(event); // 在这里做Y方向的判断拦截
+			// 上下移动的话就不做和任何处理
+			if (curMoveDirection == DIRECTION_Y) {
+				// Log.d(TAG, "---111111111------------");
+				mInterceptFlag = DONINTERCE;// 不拦截
+				break;
+			}
+
+			// 左菜单打开,并且向右滑动,不拦截
+
+			Log.d(TAG, "---isMenuLeftOpen()------------:" + isMenuLeftOpen());
+			if (isMenuLeftOpen() && isMoveRight(event)) {
+				// Log.d(TAG, "---22222222------------");
+				mInterceptFlag = DONINTERCE;// 不拦截
+				break;
+			}
+
+			if (isMenuRightOpen() && !isMoveRight(event)) {
+				// Log.d(TAG, "---33333333333------------");
+				mInterceptFlag = DONINTERCE;// 不拦截
+				break;
+			}
+
+			mInterceptFlag = INTERCE;
+
 			break;
 		default:
 			break;
 		}
-		Log.d(TAG, "-----------------:" + mInterceptFlag);
-		Log.d(TAG, "-----------------:" + isIntercept());
+		// Log.d(TAG, "-----------------mInterceptFlag:" + mInterceptFlag);
+		// Log.d(TAG, "-----------------isIntercept:" + isIntercept());
+		recordLastXY(event);
 		return isIntercept();
+	}
+
+	boolean isMoveRight(MotionEvent event) {
+
+		return getDisX(event) < 0;
+	}
+
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_DOWN:
+			// Log.d(TAG, "---------TouchDown--------");
+			handleTouchDownEvent(event);
+			break;
+		case MotionEvent.ACTION_MOVE:
+			// Log.d(TAG, "--------TouchMove---------");
+			// 计算滑动方向
+			handleTouchMoveEvent(event);
+			break;
+		case MotionEvent.ACTION_UP:
+			// Log.d(TAG, "--------TouchUP---------");
+			handleTouchUpEvent(event);
+			break;
+		case MotionEvent.ACTION_CANCEL:
+			// Log.d(TAG, "--------TouchCancle---------");
+			mInterceptFlag = NOTINTERCE; // 恢复拦截状态
+			break;
+		default:
+			break;
+		}
+		recordLastXY(event);
+		return true;
 	}
 
 	private boolean isForeceIntercept(MotionEvent event) {
@@ -280,39 +332,11 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 	protected abstract void onMeasure(int widthMeasureSpec,
 			int heightMeasureSpec);
 
-	@Override
-	public boolean onTouchEvent(MotionEvent event) {
-
-		switch (event.getAction()) {
-		case MotionEvent.ACTION_DOWN:
-			Log.d(TAG, "---------TouchDown--------");
-			handleTouchDownEvent(event);
-			break;
-		case MotionEvent.ACTION_MOVE:
-			Log.d(TAG, "--------TouchMove---------");
-			// 计算滑动方向
-			handleTouchMoveEvent(event);
-			break;
-		case MotionEvent.ACTION_UP:
-			Log.d(TAG, "--------TouchUP---------");
-			handleTouchUpEvent(event);
-			break;
-		case MotionEvent.ACTION_CANCEL:
-			Log.d(TAG, "--------TouchCancle---------");
-			mInterceptFlag = NOTINTERCE; // 恢复拦截状态
-			break;
-		default:
-			break;
-		}
-		recordLastXY(event);
-		return true;
-	}
-
 	private void handleTouchDownEvent(MotionEvent event) {
 		mIsMove = false; // 判断第一次时候不是移动过了
 		curMoveDirection = NODIRECTION;
-		velocityTracker.clear();
-		velocityTracker.addMovement(event);
+		canOpenLeft = true;
+		canOpenRight = true;
 		onTouchDown(event);
 	}
 
@@ -320,19 +344,46 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 		calcMoveDirection(event);
 		// 上下移动的话就不做和任何处理
 		if (curMoveDirection == DIRECTION_Y) {
-//			Log.d(TAG, "----这里返回了-----curMoveDirection:" + curMoveDirection);
+
 			return;
 		}
+
 		float disX = getDisX(event);//
 		if (!mIsMove) {
-			if (isCanMove(event)) {
+			if (!isCanMove(event)) {
 				return;
 			}
 			disX = compensateFirstMoveDistance(disX);
 			mIsMove = true;
 		}
+
 		velocityTracker.addMovement(event);
+		
+
+		// 不要有跨页的
+		if (isMenuClose()) {
+
+			if (canOpenLeft && canOpenRight) {
+
+				// Log.d(TAG, "--getScrollX:" + getScrollX() +
+				// ",getCloseMenuPosition:" + getCloseMenuPosition());
+
+				if ((getScrollX() + disX) < getCloseMenuPosition()) {
+					// Log.d(TAG, "--------不能打右边");
+					canOpenRight = false;
+					curMaxScrollSpan = (int) getMenuWidth();
+
+				} else if ((getScrollX() + disX) > getCloseMenuPosition()) {
+					// Log.d(TAG, "--------不能打开左边");
+					canOpenLeft = false;
+					
+					curMinScrollSpan = (int) getMenuWidth();
+				}
+			}
+		}
+		
 		onTouchMove(event, disX, getDisY(event));
+
 	}
 
 	private void handleTouchUpEvent(MotionEvent event) {
@@ -347,12 +398,13 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 				} else if (isMenuRightOpen()) {
 					isClose = true;
 				} else {
-					if (getScrollX() > getCloseMenuPosition()) {
-						isClose = true;
-					} else {
-						isClose = false;
-					}
+
+					isClose = canOpenRight;
+
+					Log.d(TAG, "--------不能打左边:" + canOpenLeft);
+
 				}
+
 				curVelectoryDirection = 1;
 			} else {
 
@@ -362,11 +414,10 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 					isClose = true;
 				} else {
 					// 菜单关闭的
-					if (getScrollX() < getCloseMenuPosition()) {
-						isClose = true;
-					} else {
-						isClose = false;
-					}
+
+					isClose = canOpenLeft;
+
+					Log.d(TAG, "--------不能打右边:" + canOpenRight);
 				}
 				curVelectoryDirection = -1;
 			}
@@ -406,12 +457,12 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 	// 计算移动方向,XY方向的滑动方向的
 	private void calcMoveDirection(MotionEvent event) {
 		if (curMoveDirection != NOT_SLIDE || !isCanMove(event)) {
-//			Log.d(TAG, "zhongduan?--------------");
+			// Log.d(TAG, "zhongduan?--------------");
 			return;
-		} 
-//		else {
-//			Log.d(TAG, "不中断?--------------");
-//		}
+		}
+		// else {
+		// Log.d(TAG, "不中断?--------------");
+		// }
 		float disX = getDisX(event);
 		float disY = getDisY(event);
 
@@ -429,8 +480,8 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 		} else {
 			curMoveDirection = DIRECTION_X;
 		}
-//		Log.d(TAG, "curMoveDirection--------------:" + curMoveDirection);
-		
+		// Log.d(TAG, "curMoveDirection--------------:" + curMoveDirection);
+
 	}
 
 	private float calcMoveDistance(MotionEvent event) {
@@ -440,7 +491,7 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 	}
 
 	private boolean isCanMove(MotionEvent event) {
-		return calcMoveDistance(event) < mTouchSlop;
+		return !mIsMove || calcMoveDistance(event) > mTouchSlop;
 	}
 
 	private float compensateFirstMoveDistance(float disX) {
@@ -485,16 +536,18 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 
 	protected void addScrollSpan(int scrollSpan) {
 		mMaxScrollSpan += scrollSpan;
+
+		curMaxScrollSpan = mMaxScrollSpan;
 	}
 
 	protected abstract void judgeOpenOrClose();
 
 	protected int getLeftOpenMenuPosition() {
-		return 0;
+		return curMinScrollSpan;
 	}
 
 	protected int getRightOpenMenuPosition() {
-		return mMaxScrollSpan;
+		return curMaxScrollSpan;
 	}
 
 	protected int getCloseMenuPosition() {
