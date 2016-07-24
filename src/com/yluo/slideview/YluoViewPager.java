@@ -11,11 +11,8 @@ import android.view.ViewConfiguration;
 public class YluoViewPager extends ViewPager{
 	
 	private static final String TAG = "YluoViewPager";
-	
-	private float mLastX = 0;
-	private float mLastY;
-	private int mTouchSlop;
-	private boolean mIsMove;
+
+	private MotionEventUtil eventUtil;
 	
 	private float mCurItemOffset = 0;
 	
@@ -32,37 +29,23 @@ public class YluoViewPager extends ViewPager{
 			
 	}
 	private void init() {
-		ViewConfiguration viewConfiguration = ViewConfiguration
-				.get(getContext());
-
-		mTouchSlop = viewConfiguration.getScaledTouchSlop();
-		
+		eventUtil = new MotionEventUtil(getContext());
 		
 		this.addOnPageChangeListener(new OnPageChangeListener() {
 			
 			@Override
 			public void onPageSelected(int arg0) {
-//				
-				
-//				Log.d(TAG, "---mCurItem:" + mCurItem );
-				
 			}
 			
 			@Override
-			public void onPageScrolled(int arg0, float arg1, int arg2) {
-				mCurItemOffset = arg1;
-				mCurItem = arg0;
-				Log.d(TAG, "mCurItem:" + arg0 + "-----curItemOffset:" + mCurItemOffset);
+			public void onPageScrolled(int curItem, float curItemOffset, int arg2) {
+				mCurItem = curItem;
+				mCurItemOffset = curItemOffset;
 			}
-			
 			@Override
 			public void onPageScrollStateChanged(int arg0) {
-				// TODO Auto-generated method stub
-				
 			}
 		});
-		
-
 	}
 	
 	@Override
@@ -70,14 +53,16 @@ public class YluoViewPager extends ViewPager{
 		
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
+			
 			getParent().requestDisallowInterceptTouchEvent(true);
 			break;
 		case MotionEvent.ACTION_MOVE:{
-			if(mCurItem == 0 && isMoveRight(event) && mCurItemOffset == 0.0f) {
+			
+			if(isMeetLeftPosition(event)) {
+				
 				getParent().requestDisallowInterceptTouchEvent(false);
 				
-			} else if(mCurItem == (getAdapter().getCount() - 1) // 要添加一个百分比才行
-					&& !isMoveRight(event) && mCurItemOffset == 0.0f){
+			} else if( isMeetRightPosition(event)){
 				
 				getParent().requestDisallowInterceptTouchEvent(false);
 			}
@@ -87,34 +72,14 @@ public class YluoViewPager extends ViewPager{
 			break;
 		}
 		
-		
-		
-		recordLastXY(event);
+		eventUtil.recordEventXY(event);
 		return super.onTouchEvent(event);
 	}
-	private void recordLastXY(MotionEvent event) {
-		mLastX = event.getX();
-		mLastY = event.getY();
+	private boolean isMeetLeftPosition(MotionEvent event) {
+		return mCurItem == 0 && eventUtil.isMoveRight(event) && mCurItemOffset == 0.0f;
 	}
-	private boolean isMoveRight(MotionEvent event) {
-		
-		return getDisX(event) < 0 ;
-	}
-	
-	private boolean isCanMove(MotionEvent event) {
-		return  !mIsMove || calcMoveDistance(event) > mTouchSlop;
-	}
-	
-	private float calcMoveDistance(MotionEvent event) {
-		float distance = (float) Math.sqrt(Math.pow(getDisX(event), 2)
-				+ Math.pow(getDisY(event), 2));
-		return distance;
-	}
-	private float getDisX(MotionEvent event) {
-		return mLastX - event.getX();
+	private boolean isMeetRightPosition(MotionEvent event) {
+		return mCurItem == (getAdapter().getCount() - 1) &&!eventUtil.isMoveRight(event) && mCurItemOffset == 0.0f;
 	}
 
-	private float getDisY(MotionEvent event) {
-		return mLastY - event.getY();
-	}
 }

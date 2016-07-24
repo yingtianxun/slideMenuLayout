@@ -127,10 +127,6 @@ public class HideSlideMenuLayout extends AbstractSlideMenuLayout{
 		return false;
 	}
 
-	@Override
-	protected void openMenu(int curVelectoryDirection) {
-		
-	}
 
 	@Override
 	protected boolean hasLeftMenu() {
@@ -144,6 +140,12 @@ public class HideSlideMenuLayout extends AbstractSlideMenuLayout{
 
 	@Override
 	protected void judgeOpenOrClose() {
+		
+	}
+
+	@Override
+	protected void openMenu(float curVelocity) {
+		// TODO Auto-generated method stub
 		
 	}
 
