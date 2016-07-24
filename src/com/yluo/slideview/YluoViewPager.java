@@ -68,28 +68,33 @@ public class YluoViewPager extends ViewPager{
 	@Override
 	public boolean onTouchEvent(MotionEvent event) {
 		
-		if(event.getAction() == MotionEvent.ACTION_DOWN) {
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_DOWN:
 			getParent().requestDisallowInterceptTouchEvent(true);
-		} else if(event.getAction() == MotionEvent.ACTION_MOVE){
-						
+			break;
+		case MotionEvent.ACTION_MOVE:{
 			if(mCurItem == 0 && isMoveRight(event) && mCurItemOffset == 0.0f) {
 				getParent().requestDisallowInterceptTouchEvent(false);
 				
 			} else if(mCurItem == (getAdapter().getCount() - 1) // 要添加一个百分比才行
 					&& !isMoveRight(event) && mCurItemOffset == 0.0f){
 				
-				Log.d(TAG, "mCurItem:" + mCurItem + "-----最右边不拦截"
-						+ ",getAdapter().getCount():" + getAdapter().getCount() + ",mCurItemOffset:" + mCurItemOffset);
-				
 				getParent().requestDisallowInterceptTouchEvent(false);
 			}
-			
+		}
+			break;
+		default:
+			break;
 		}
 		
 		
+		
+		recordLastXY(event);
+		return super.onTouchEvent(event);
+	}
+	private void recordLastXY(MotionEvent event) {
 		mLastX = event.getX();
 		mLastY = event.getY();
-		return super.onTouchEvent(event);
 	}
 	private boolean isMoveRight(MotionEvent event) {
 		

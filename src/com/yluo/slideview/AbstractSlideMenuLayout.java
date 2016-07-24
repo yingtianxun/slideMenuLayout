@@ -246,11 +246,6 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 		default:
 			break;
 		}
-		// Log.d(TAG, "-----------------mInterceptFlag:" + mInterceptFlag);
-		// Log.d(TAG, "-----------------isIntercept:" + isIntercept());
-//		if(isWaitingCallStatusListener) {
-//			return true;
-//		}
 		recordLastXY(event);
 		return isIntercept();
 	}
