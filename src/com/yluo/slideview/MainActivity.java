@@ -15,30 +15,37 @@ import android.view.ViewGroup;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.TextView;
 
-
 public class MainActivity extends Activity {
 	private static final String TAG = "MainActivity";
 	private SacleSlideMenuLayout sl_test;
 	private ViewPager vPager;
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        
-        sl_test = (SacleSlideMenuLayout)findViewById(R.id.sl_test);
-        
-        sl_test.setLeftMenuView(R.layout.left_menu);
-        
-        sl_test.setRightMenuView(R.layout.right_menu);
-        
-        vPager = (ViewPager) findViewById(R.id.vp_test);
-        
-        vPager.setAdapter(new fuckAdapter());
-        
-    }
-    
-    class fuckAdapter extends PagerAdapter {
-    	
+	private HideSlideMenuLayout hl_test;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main2);
+
+		// sl_test = (SacleSlideMenuLayout)findViewById(R.id.sl_test);
+
+		// sl_test.setLeftMenuView(R.layout.left_menu);
+		//
+		// sl_test.setRightMenuView(R.layout.right_menu);
+
+		hl_test = (HideSlideMenuLayout) findViewById(R.id.sl_test2);
+		
+		hl_test.setLeftMenuView(R.layout.left_menu);
+		
+		hl_test.setRightMenuView(R.layout.right_menu);
+
+		 vPager = (ViewPager) findViewById(R.id.vp_test);
+		
+		 vPager.setAdapter(new fuckAdapter());
+
+	}
+
+	class fuckAdapter extends PagerAdapter {
+
 		@Override
 		public void destroyItem(ViewGroup container, int position, Object object) {
 			container.removeView((View) object);
@@ -46,18 +53,20 @@ public class MainActivity extends Activity {
 
 		@Override
 		public Object instantiateItem(ViewGroup container, int position) {
-			
+
 			TextView textView = new TextView(MainActivity.this);
-			
+
 			textView.setText("----Ò³Ãæ:" + position);
-			
+
 			textView.setTextColor(Color.BLACK);
-			
-			int widthSpec = MeasureSpec.makeMeasureSpec(100, MeasureSpec.EXACTLY);
-			int heightSpec = MeasureSpec.makeMeasureSpec(100, MeasureSpec.EXACTLY);
-			MarginLayoutParams layoutParams = new MarginLayoutParams(widthSpec,heightSpec);
-			
-			
+
+			int widthSpec = MeasureSpec.makeMeasureSpec(100,
+					MeasureSpec.EXACTLY);
+			int heightSpec = MeasureSpec.makeMeasureSpec(100,
+					MeasureSpec.EXACTLY);
+			MarginLayoutParams layoutParams = new MarginLayoutParams(widthSpec,
+					heightSpec);
+
 			textView.setLayoutParams(layoutParams);
 			container.addView(textView);
 			return textView;
@@ -72,7 +81,7 @@ public class MainActivity extends Activity {
 		public boolean isViewFromObject(View arg0, Object arg1) {
 			return arg0 == arg1;
 		}
-    	
-    }
+
+	}
 
 }

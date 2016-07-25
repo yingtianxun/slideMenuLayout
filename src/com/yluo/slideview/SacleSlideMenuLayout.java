@@ -86,16 +86,18 @@ public class SacleSlideMenuLayout extends AbstractSlideMenuLayout {
 
 	@Override
 	protected void onFinishInflate() {
-		if (getChildCount() != 1) {
-			throw new IllegalArgumentException("SlideMenuLayout的内容只能有一个");
+		if(!isFinishInflate ) {
+			if (getChildCount() != 1) {
+				throw new IllegalArgumentException("SlideMenuLayout的内容只能有一个");
+			}
+			mViewContent = getChildAt(0);
+
+			addChild(mLeftViewMenu, true);
+
+			addChild(mRightViewMenu, true);
+
+			isFinishInflate = true;
 		}
-		mViewContent = getChildAt(0);
-
-		addChild(mLeftViewMenu, true);
-
-		addChild(mRightViewMenu, true);
-
-		isFinishInflate = true;
 	}
 
 	private void resetWidthAndMenuScrollSpan() {
