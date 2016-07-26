@@ -1,8 +1,16 @@
 package com.yluo.slideview;
 
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.Rect;
+import android.graphics.Paint.Style;
+import android.graphics.Shader.TileMode;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -63,9 +71,17 @@ public class HideSlideMenuLayout extends ViewGroup {
 
 	private int mCurLeftMenuLayoutLeft = 0;
 
-	private boolean isFirstMeaureLeft = true;
+	private Paint mPaint;
 
-	private boolean isFirstMeaureRight = true;
+	// private int mShaderWidth = dp2px(10);
+	//
+	// private LinearGradient mLeftMenuShader;
+	//
+	// private LinearGradient mRightMenuShader;
+
+	private float mContentScaleFactor = 0.95f;
+
+	private boolean notMove =  true;
 
 	public HideSlideMenuLayout(Context context, AttributeSet attrs,
 			int defStyleAttr) {
@@ -89,6 +105,23 @@ public class HideSlideMenuLayout extends ViewGroup {
 		eventUtil = new MotionEventUtil(getContext());
 
 		mScroller = new Scroller(getContext());
+
+		mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+		mPaint.setColor(Color.BLACK);
+		mPaint.setStrokeWidth(1);
+		mPaint.setAlpha(100);
+		mPaint.setStyle(Style.FILL);
+	}
+
+	private int dp2px(float dp) {
+		WindowManager wm = (WindowManager) getContext().getSystemService(
+				Context.WINDOW_SERVICE);
+
+		DisplayMetrics outMetrics = new DisplayMetrics();
+		wm.getDefaultDisplay().getMetrics(outMetrics);
+
+		return (int) (outMetrics.density * dp + 0.5f);
+
 	}
 
 	@Override
@@ -98,16 +131,17 @@ public class HideSlideMenuLayout extends ViewGroup {
 			View view = getCurMoveView();
 			if (view != null) {
 
-				if (mScroller.isFinished()) {
-					if (mMenuOpenStatus == MENU_CLOSE) {
-						Log.d(TAG, "+++++++++++++++++++++++ finish: " + mScroller.getCurrX());
-						mCurMoveView = CONTENT;
-					}
-				}
+				// if(mScroller.isFinished()) {
+				// mCurMoveView = CONTENT;
+				// }
 				view.setTranslationX(mScroller.getCurrX());
+
 				invalidate();
-	
-				
+
+				float mContentScaleFactor = getContentScaleFactor();
+
+				mViewContent.setScaleX(mContentScaleFactor);
+				mViewContent.setScaleY(mContentScaleFactor);
 			}
 
 		}
@@ -134,6 +168,34 @@ public class HideSlideMenuLayout extends ViewGroup {
 
 	public void setRightMenuView(int id) {
 		setRightMenuView(inflate(id));
+	}
+
+	public void openRightMenu() {
+		if (isMenuClose()) {
+			float tranX = mRightViewMenu.getTranslationX();
+
+			mScroller.startScroll((int) (tranX - 0.5f), 0,
+					(int) (mRightMenuOpenPosition - tranX - 0.5f), 0, 300);
+
+			mMenuOpenStatus = RIGHT_MENU_OPEN;
+			mCurMoveView = RIGHT_MENU;
+			invalidate();
+		}
+	}
+
+	public void openLeftMenu() {
+		if (isMenuClose()) {
+
+			float tranX = mLeftViewMenu.getTranslationX();
+
+			mScroller.startScroll((int) (tranX + 0.5f), 0,
+					(int) (mLeftMenuOpenPosition - tranX + 0.5f), 0, 300);
+
+			mMenuOpenStatus = LEFT_MENU_OPEN;
+			mCurMoveView = LEFT_MENU;
+			invalidate();
+
+		}
 	}
 
 	protected View inflate(int id) {
@@ -247,8 +309,7 @@ public class HideSlideMenuLayout extends ViewGroup {
 
 		mLeftMenuClosePosition = 0;
 
-		mCurLeftMenuLayoutLeft = (int) (isLeftMenuOpen() ? 0
-				: - viewWidth);
+		mCurLeftMenuLayoutLeft = (int) (isLeftMenuOpen() ? 0 : -viewWidth);
 
 	}
 
@@ -258,16 +319,15 @@ public class HideSlideMenuLayout extends ViewGroup {
 			return;
 		}
 
-		int viewWidth = setViewWidthAndHeight(mRightViewMenu, true, heightMeasureSpec);
+		int viewWidth = setViewWidthAndHeight(mRightViewMenu, true,
+				heightMeasureSpec);
 
-		mRightMenuOpenPosition = - viewWidth; // 打开的位置
+		mRightMenuOpenPosition = -viewWidth; // 打开的位置
 
 		mRightMenuClosePosition = 0; // 关闭的位置
 
-
-		mCurRightMenuLayoutLeft = (int) (isRightMenuOpen() ? mViewContent.getMeasuredWidth() - viewWidth
-				: viewWidth);
-
+		mCurRightMenuLayoutLeft = (int) (isRightMenuOpen() ? mViewContent
+				.getMeasuredWidth() - viewWidth : viewWidth);
 
 	}
 
@@ -326,22 +386,38 @@ public class HideSlideMenuLayout extends ViewGroup {
 	@Override
 	public LayoutParams generateLayoutParams(AttributeSet attrs) {
 		return new LayoutParams(getContext(), attrs);
-
 	}
-
+	
+	
+	public void setNotMove(boolean notMove) {
+		this.notMove = notMove;
+	}
+	
 	public boolean onInterceptTouchEvent(MotionEvent event) {
-		// Log.d(TAG, "--------ooooooooo-------");
+//		notMove = true;
+		if(isMenuClose() && notMove) {
+			return false;
+		}
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
-			if(!isMenuClose()) {
+			if (!isMenuClose()) {
+				Log.d(TAG, "----按下设置拦截---");
 				mInterceptStatus = INTERCEP_YES;
+				if (isLeftMenuOpen()) {
+					mCurMoveView = LEFT_MENU;
+				} else {
+					mCurMoveView = RIGHT_MENU;
+				}
 			} else {
+				Log.d(TAG, "----按下设置不确定----");
 				mInterceptStatus = INTERCEP_NO_DECIDE;
+				mCurMoveView = CONTENT;
 			}
-			
+
 			eventUtil.resetMoveDirection();
-			mCurMoveView = CONTENT;
-			
+
+			//
+
 			break;
 
 		case MotionEvent.ACTION_MOVE:
@@ -357,13 +433,13 @@ public class HideSlideMenuLayout extends ViewGroup {
 				break;
 			}
 			if (isLeftMenuOpen() && eventUtil.isMoveRight(event)) {
-				Log.d(TAG, "----不拦截");
+				Log.d(TAG, "----111不拦截");
 				mInterceptStatus = INTERCEP_NO;// 不拦截
 				break;
 			}
 
 			if (isRightMenuOpen() && eventUtil.isMoveLeft(event)) {
-				Log.d(TAG, "----不拦截");
+				Log.d(TAG, "----222不拦截");
 				mInterceptStatus = INTERCEP_NO;// 不拦截
 				break;
 			}
@@ -379,66 +455,24 @@ public class HideSlideMenuLayout extends ViewGroup {
 	}
 
 	public boolean onTouchEvent(MotionEvent event) {
+		if(isMenuClose() && notMove) {
+			return false;
+		}
+		
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 			
 			
+			
 			eventUtil.resetMoveStatus();
 			eventUtil.resetMoveDirection();
-			
-			
 			break;
 		case MotionEvent.ACTION_MOVE:
 			handleTouchMoveEvent(event);
 			break;
 		case MotionEvent.ACTION_UP:
 
-			if (mCurMoveView == RIGHT_MENU) {
-
-				float tranX = mRightViewMenu.getTranslationX();
-
-				if (tranX != mRightMenuClosePosition
-						&& tranX != mRightMenuOpenPosition) {
-					if(tranX <= mRightMenuOpenPosition / 2) {
-						// 开启
-						mScroller.startScroll((int) tranX, 0,
-								(int) (mRightMenuOpenPosition - tranX), 0, 300);
-						
-						mMenuOpenStatus = RIGHT_MENU_OPEN;
-						
-					} else {
-						mScroller.startScroll((int) tranX, 0,
-								(int) (mRightMenuClosePosition - tranX), 0, 300);
-						
-						mMenuOpenStatus = MENU_CLOSE;
-					}
-					invalidate();
-				}
-
-			} else if (mCurMoveView == LEFT_MENU) {
-				
-				float tranX = mLeftViewMenu.getTranslationX();
-
-				if (tranX != mLeftMenuClosePosition
-						&& tranX != mLeftMenuOpenPosition) {
-					
-					if(tranX >= mLeftMenuOpenPosition / 2) {
-						// 开启
-						mScroller.startScroll((int) tranX, 0,
-								(int) (mLeftMenuOpenPosition - tranX), 0, 300);
-						
-						mMenuOpenStatus = LEFT_MENU_OPEN;
-						
-					} else {
-						mScroller.startScroll((int) tranX, 0,
-								(int) (mLeftMenuClosePosition - tranX), 0, 300);
-						
-						mMenuOpenStatus = MENU_CLOSE;
-					}
-					invalidate();
-				}
-				
-			}
+			handleTouchUpEvent();
 
 			break;
 		default:
@@ -446,6 +480,125 @@ public class HideSlideMenuLayout extends ViewGroup {
 		}
 		eventUtil.recordEventXY(event);
 		return true;
+	}
+
+	@Override
+	protected void dispatchDraw(Canvas canvas) {
+		super.dispatchDraw(canvas);
+		drawMask(canvas);
+
+	}
+
+	private void drawMask(Canvas canvas) {
+		if (mCurMoveView != CONTENT) {
+			float left = 0;
+			float right = 0;
+			float alphaFactor;
+			if (mCurMoveView == LEFT_MENU) {
+				left = mLeftViewMenu.getTranslationX();
+				if (left < 0) {
+					left = 0;
+				}
+				right = getMeasuredWidth();
+				alphaFactor = (right - left)
+						/ (mLeftMenuOpenPosition - mLeftMenuClosePosition);
+			} else {
+				left = 0;
+				right = getMeasuredWidth() + mRightViewMenu.getTranslationX();
+				alphaFactor = (right - left)
+						/ (mRightMenuClosePosition - mRightMenuOpenPosition);
+			}
+
+			mPaint.setAlpha((int) (100 * (1 - alphaFactor)));
+			canvas.drawRect(left, 0, right, getMeasuredHeight(), mPaint);
+		}
+	}
+
+	private float getContentScaleFactor() {
+
+		if (mCurMoveView != CONTENT) {
+
+			float alphaFactor = 1;
+
+			if (mCurMoveView == LEFT_MENU) {
+				float left = mLeftViewMenu.getTranslationX();
+				if (left < 0) {
+					left = 0;
+				}
+				float right = getMeasuredWidth();
+				alphaFactor = (right - left)
+						/ (mLeftMenuOpenPosition - mLeftMenuClosePosition);
+			} else {
+				float left = 0;
+				float right = getMeasuredWidth()
+						+ mRightViewMenu.getTranslationX();
+				alphaFactor = (right - left)
+						/ (mRightMenuClosePosition - mRightMenuOpenPosition);
+			}
+			return 1 - (1 - mContentScaleFactor) * (1 - alphaFactor);
+		}
+		return 1;
+	}
+
+	private void handleTouchUpEvent() {
+		if (mCurMoveView == RIGHT_MENU) {
+			float tranX = mRightViewMenu.getTranslationX();
+
+			if (tranX != mRightMenuClosePosition
+					&& tranX != mRightMenuOpenPosition) {
+				if (tranX <= mRightMenuOpenPosition / 2) {
+					// 开启
+					mScroller.startScroll((int) (tranX - 0.5f), 0,
+							(int) (mRightMenuOpenPosition - tranX - 0.5f), 0,
+							300);
+
+					mMenuOpenStatus = RIGHT_MENU_OPEN;
+
+				} else {
+					mScroller.startScroll((int) (tranX + 0.5f), 0,
+							(int) (mRightMenuClosePosition - tranX + 0.5f), 0,
+							300);
+
+					mMenuOpenStatus = MENU_CLOSE;
+				}
+				invalidate();
+			} else if (tranX == mRightMenuClosePosition) {
+				mMenuOpenStatus = MENU_CLOSE;
+			} else if (tranX == mRightMenuOpenPosition) {
+				mMenuOpenStatus = RIGHT_MENU_OPEN;
+			}
+
+		} else if (mCurMoveView == LEFT_MENU) {
+			Log.d(TAG, "11111mCurMoveView:" + mCurMoveView);
+			float tranX = mLeftViewMenu.getTranslationX();
+
+			if (tranX != mLeftMenuClosePosition
+					&& tranX != mLeftMenuOpenPosition) {
+				Log.d(TAG, "kkkkkk:" + mCurMoveView);
+				if (tranX >= mLeftMenuOpenPosition / 2) {
+					// 开启
+					mScroller.startScroll((int) (tranX + 0.5f), 0,
+							(int) (mLeftMenuOpenPosition - tranX + 0.5f), 0,
+							300);
+
+					mMenuOpenStatus = LEFT_MENU_OPEN;
+
+				} else {
+					mScroller.startScroll((int) (tranX - 0.5f), 0,
+							(int) (mLeftMenuClosePosition - tranX - 0.5f), 0,
+							300);
+
+					mMenuOpenStatus = MENU_CLOSE;
+				}
+				invalidate();
+			} else if (tranX == mLeftMenuClosePosition) {
+				mMenuOpenStatus = MENU_CLOSE;
+			} else if (tranX == mLeftMenuOpenPosition) {
+				mMenuOpenStatus = LEFT_MENU_OPEN;
+			}
+		} else {
+			mMenuOpenStatus = MENU_CLOSE;
+		}
 	}
 
 	private View getCurMoveView() {
@@ -457,7 +610,7 @@ public class HideSlideMenuLayout extends ViewGroup {
 			return mLeftViewMenu;
 		}
 
-		return mViewContent;
+		return null;
 	}
 
 	private void handleTouchMoveEvent(MotionEvent event) {
@@ -487,45 +640,61 @@ public class HideSlideMenuLayout extends ViewGroup {
 				}
 			}
 			if (mCurMoveView == RIGHT_MENU) {
+				// 关闭的时候拖动的是右边的菜单
+				Log.d(TAG, "--关闭的时候拖动的是右边的菜单--");
+				float tranX = adjustRightMenuItem(mRightViewMenu
+						.getTranslationX() - disX);
 
-				float tranX = adjustRightMenuItem(mRightViewMenu.getTranslationX() - disX);
-				
 				mRightViewMenu.setTranslationX(tranX);
 			} else {
+				// 关闭的时候 拖动的是左边的菜单
+				Log.d(TAG, "--关闭的时候 拖动的是左边的菜单--");
 				float tranX = mLeftViewMenu.getTranslationX() - disX;
-				
+
 				mLeftViewMenu.setTranslationX(adjustLeftMenuItem(tranX));
 			}
 			invalidate();
-		} else if(isRightMenuOpen() && eventUtil.isMoveRight(event)) {
+		} else if ((isRightMenuOpen() && eventUtil.isMoveRight(event))
+				|| mCurMoveView == RIGHT_MENU) {
 			mCurMoveView = RIGHT_MENU;
-			float tranX = adjustRightMenuItem(mRightViewMenu.getTranslationX() - disX);
-			
+			float tranX = adjustRightMenuItem(mRightViewMenu.getTranslationX()
+					- disX);
+
 			mRightViewMenu.setTranslationX(tranX);
-			
+
 			invalidate();
-		} else if(isLeftMenuOpen() && eventUtil.isMoveLeft(event)) {
+
+		} else if ((isLeftMenuOpen() && eventUtil.isMoveLeft(event))
+				|| mCurMoveView == LEFT_MENU) {
+			Log.d(TAG, "--左边菜单打开的拖动--");
 			mCurMoveView = LEFT_MENU;
+
 			float tranX = mLeftViewMenu.getTranslationX() - disX;
-			
-			
+
 			mLeftViewMenu.setTranslationX(adjustLeftMenuItem(tranX));
+
+			invalidate();
 		}
+
+		float mContentScaleFactor = getContentScaleFactor();
+
+		mViewContent.setScaleX(mContentScaleFactor);
+		mViewContent.setScaleY(mContentScaleFactor);
 	}
-	
+
 	private float adjustLeftMenuItem(float tranX) {
-		
+
 		if (tranX > mLeftMenuOpenPosition) {
 
-			tranX = mRightMenuOpenPosition;
+			tranX = mLeftMenuOpenPosition;
 
 		} else if (tranX < mLeftMenuClosePosition) {
 
-			tranX = mRightMenuClosePosition;
+			tranX = mLeftMenuClosePosition;
 		}
 		return tranX;
 	}
-	
+
 	private float adjustRightMenuItem(float tranX) {
 		if (tranX < mRightMenuOpenPosition) {
 
@@ -537,8 +706,7 @@ public class HideSlideMenuLayout extends ViewGroup {
 		}
 		return tranX;
 	}
-	
-	
+
 	private boolean isIntercept() {
 		if (mInterceptStatus == INTERCEP_YES) {
 			return true;

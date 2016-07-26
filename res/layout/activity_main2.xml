@@ -8,12 +8,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
 
-        <com.yluo.slideview.YluoViewPager
-            android:background="@android:color/holo_orange_dark"
-            android:id="@+id/vp_test"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-        
+            android:layout_height="match_parent" >
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerInParent="true"
+                android:onClick="openRightMenu"
+                android:text="打开右菜单" />
+        </RelativeLayout>
     </com.yluo.slideview.HideSlideMenuLayout>
 
 </RelativeLayout>

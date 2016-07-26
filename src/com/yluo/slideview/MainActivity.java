@@ -38,10 +38,14 @@ public class MainActivity extends Activity {
 		
 		hl_test.setRightMenuView(R.layout.right_menu);
 
-		 vPager = (ViewPager) findViewById(R.id.vp_test);
-		
-		 vPager.setAdapter(new fuckAdapter());
+//		 vPager = (ViewPager) findViewById(R.id.vp_test);
+//		
+//		 vPager.setAdapter(new fuckAdapter());
 
+	}
+	public void openRightMenu(View view) {
+		Log.d(TAG, "--------------");
+		hl_test.openRightMenu();
 	}
 
 	class fuckAdapter extends PagerAdapter {
