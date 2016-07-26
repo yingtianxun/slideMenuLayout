@@ -247,7 +247,7 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 			// 右菜单打开点击右边部分不显示
 		} else if (isMenuRightOpen()
 				&& event.getX() <= (mContentWidth - getMenuWidth())) {
-			curMinScrollSpan = (int) getMenuWidth();
+			curMinScrollSpan = 0;
 			return true;
 		}
 		return false;
@@ -315,7 +315,7 @@ public abstract class AbstractSlideMenuLayout extends ViewGroup {
 					curMaxScrollSpan = (int) getMenuWidth();
 				} else if ((getScrollX() + disX) > getCloseMenuPosition()) {
 					canOpenLeft = false;
-					curMinScrollSpan = (int) getMenuWidth();
+					curMinScrollSpan = 0;
 				}
 			}
 		}
